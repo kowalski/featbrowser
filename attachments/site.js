@@ -1,49 +1,3 @@
-var request = function (options, callback) {
-  options.success = function (obj) {
-    callback(null, obj);
-  }
-  options.error = function (err) {
-    if (err) callback(err);
-    else callback(true);
-  }
-  if (options.data && typeof options.data == 'object') {
-    options.data = JSON.stringify(options.data)
-  }
-  if (!options.dataType) options.processData = false;
-  if (!options.dataType) options.contentType = 'application/json';
-  if (!options.dataType) options.dataType = 'json';
-  $.ajax(options)
-}
-
-$.expr[":"].exactly = function(obj, index, meta, stack){
-  return ($(obj).text() == meta[3])
-}
-
-var param = function( a ) {
-  // Query param builder from jQuery, had to copy out to remove conversion of spaces to +
-  // This is important when converting datastructures to querystrings to send to CouchDB.
-	var s = [];
-	if ( jQuery.isArray(a) || a.jquery ) {
-		jQuery.each( a, function() { add( this.name, this.value ); });
-	} else {
-	  for ( var prefix in a ) { buildParams( prefix, a[prefix] ); }
-	}
-  return s.join("&");
-	function buildParams( prefix, obj ) {
-		if ( jQuery.isArray(obj) ) {
-			jQuery.each( obj, function( i, v ) {
-				if (  /\[\]$/.test( prefix ) ) { add( prefix, v );
-				} else { buildParams( prefix + "[" + ( typeof v === "object" || jQuery.isArray(v) ? i : "") +"]", v )}
-			});
-		} else if (  obj != null && typeof obj === "object" ) {
-			jQuery.each( obj, function( k, v ) { buildParams( prefix + "[" + k + "]", v ); });
-		} else { add( prefix, obj ); }
-	}
-	function add( key, value ) {
-		value = jQuery.isFunction(value) ? value() : value;
-		s[ s.length ] = encodeURIComponent(key) + "=" + encodeURIComponent(value);
-	}
-}
 
 function render(template, target, data) {
     if ( !data ) var data = {};
@@ -51,21 +5,81 @@ function render(template, target, data) {
     $( "#" + target ).html(html);
 }
 
+var config = {
+    db: document.location.href.split( '/' )[ 3 ],
+    design: 'browser',
+};
+
+config.baseURL = "/" + config.db + "/_design/" + config.design + "/_rewrite/";
+
+function reqOpts(opts) {
+    var defaults = {
+        uri: config.baseURL + "api",
+        method: "GET",
+        headers: {"Content-type": "application/json"},
+        cache: true
+    };
+    return $.extend({}, defaults, opts);
+}
 
 var app = {};
 app.index = function () {
     render('welcome', 'main-container');
 };
 
+
+var COLORS_BY_LEVEL = ['black', 'blue'];
+
+function renderGraph(err, resp, body) {
+    if (doc == "Object Not Found") {
+        render("error", "link-graph", {text: "Document not found"});
+        return;
+    };
+    var doc = JSON.parse(body);
+    var docID = doc["_id"];
+    var sig = sigma.init($('#link-graph')[0]);
+    sig.graphProperties({
+        minNodeSize: 2,
+        maxNodeSize: 10});
+    sig.drawingProperties({
+        defaultLabelColor: '#ccc',
+        font: 'Arial',
+        edgeColor: 'source',
+        defaultEdgeType: 'curve'
+    });
+    sig.addNode(doc['_id'], {x:0 , y: 0, label: doc['.type'],
+                             color: COLORS_BY_LEVEL[0]});
+    sig.draw();
+    window.sig = sig;
+
+    $.request({uri: config.baseURL + 'api/links/' + docID},
+              function(err, resp, body) {
+                  if (!err) {
+                      var resp = JSON.parse(body);
+                      $.each(resp.rows, function(index) {
+                          var x = (0.2 * Math.sin(index / resp.rows.length * 2 * Math.PI));
+                          var y = (0.2 * Math.cos(index / resp.rows.length * 2 * Math.PI));
+                          try {
+                              sig.addNode(this.id, {label: this.key[1],
+                                                    x: x, y: y,
+                                                    color: COLORS_BY_LEVEL[1]});
+                              var edgeID = docID + '-' + this.id;
+                              sig.addEdge(edgeID, docID, this.id);
+                          } catch (e) {};
+                      });
+                      sig.draw();
+                  }
+              });
+}
+
 app.graph = function() {
-    render('graph', 'main-container', {docID: this.params['docID']});
-    return false;
+    var docID = this.params['docID'];
+    render('graph', 'main-container', {docID: docID});
+    if (docID) {
+        $.request({uri: config.baseURL + 'api/' + docID}, renderGraph);
+    }
 };
 
-app.jumpToHandler = function() {
-    this.log('here', this.params);
-    this.redirect('#', 'graph', this.params['docID']);
-};
 
 $(function () {
   app.s = $.sammy(function () {
@@ -73,7 +87,10 @@ $(function () {
     this.get('', app.index);
     this.get("#/", app.index);
     this.get("#graph", app.graph);
-    this.post("#graph", app.jumpToHandler);
+    this.post("#graph", function() {
+        // this is used by jump to form
+        this.redirect('#graph', this.params['docID']);
+    });
     this.get("#graph/:docID", app.graph);
   })
   app.s.run();

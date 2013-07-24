@@ -7,6 +7,8 @@ ddoc =
   , rewrites :
     [ {from:"/", to:'index.html'}
     , {from:"/api", to:'../../'}
+    , {from:"/api/links/:doc_id", to:'../../_design/featjs/_view/join',
+       query: {startkey: [":doc_id"], endkey: [":doc_id", {}]}}
     , {from:"/api/*", to:'../../*'}
     , {from:"/*", to:'*'}
     ]

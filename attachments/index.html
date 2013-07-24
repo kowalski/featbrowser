@@ -18,6 +18,7 @@
     <script language="javascript" type="text/javascript"
             src="script/jquery.request.js"></script>
     <script language="javascript" type="text/javascript" src="sammy/sammy.js"></script>
+    <script language="javascript" type="text/javascript" src="script/sigma.min.js"></script>
     <script language="javascript" type="text/javascript" src="site.js"></script>
   </head>
 
@@ -35,12 +36,17 @@
     </script>
 
     <script type="text/mustache" id="graph-template">
-      This is a link graph.
+      <div id="link-graph">
+      </div>
       <form id="jump-to-graph" method="post" action="#graph">
         <label for="docID">Jump to document</label>
         <input type="text" name="docID" value="{{docID}}"/>
         <input type="submit" value="go" />
       </form>
+    </script>
+
+    <script type="text/mustache" id="error-template">
+      <div class="error-message">{{text}}</div>
     </script>
 
   </body>
