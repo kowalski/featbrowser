@@ -4,18 +4,44 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="keywords" content="" />
     <meta name="description" content="" />
-    
+    <title>Browse links</title>
+
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
     <link rel="shortcut icon" type="image/png" href="favicon.png" />
-    
+
     <title></title>
     <link href="layout.css" rel="stylesheet" type="text/css" />
-    <script language="javascript" type="text/javascript" src="jquery-1.4.4.min.js"></script>
+    <script language="javascript" type="text/javascript"
+            src="script/jquery-1.6.1.min.js"></script>
+    <script language="javascript" type="text/javascript"
+            src="script/jquery.mustache.js"></script>
+    <script language="javascript" type="text/javascript"
+            src="script/jquery.request.js"></script>
     <script language="javascript" type="text/javascript" src="sammy/sammy.js"></script>
     <script language="javascript" type="text/javascript" src="site.js"></script>
   </head>
-  
+
   <body>
-    
+
+    <div id="page-controls">
+      <a href="#graph" class="section-link">Link graph</a>
+    </div>
+
+    <div id="main-container">
+    </div>
+
+    <script type="text/mustache" id="welcome-template">
+      Welcome to feat data browser
+    </script>
+
+    <script type="text/mustache" id="graph-template">
+      This is a link graph.
+      <form id="jump-to-graph" method="post" action="#graph">
+        <label for="docID">Jump to document</label>
+        <input type="text" name="docID" value="{{docID}}"/>
+        <input type="submit" value="go" />
+      </form>
+    </script>
+
   </body>
 </html>
