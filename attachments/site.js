@@ -3,9 +3,9 @@
      var defaults = {
          target: null,
          docID: null,
-         limit: 2,
+         limit: 3,
          maxNodes: 150,
-         colorsForLevel: ['black', 'blue', 'green'],
+         colorsForLevel: ['black', 'blue', 'green', 'red'],
          forceAtlasTimeout: 1500
      };
 
