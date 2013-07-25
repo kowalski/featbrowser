@@ -11,6 +11,9 @@
 
     <title></title>
     <link href="layout.css" rel="stylesheet" type="text/css" />
+    <link href="sofiapro_light_english/stylesheet.css"
+          rel="stylesheet" type="text/css" />
+
     <script language="javascript" type="text/javascript"
             src="script/jquery-1.6.1.min.js"></script>
     <script language="javascript" type="text/javascript"
@@ -25,24 +28,35 @@
 
   <body>
 
-    <div id="page-controls">
-      <a href="#graph" class="section-link">Link graph</a>
+    <div class="vertical-section">
+      <div id="top_menu">
+        <ul>
+          <li>
+            <a id="graph-link" href="#graph" class="section-link">Link graph</a>
+          </li>
+        </ul>
+        <div class="clearfix"></div>
+      </div>
     </div>
 
-    <div id="main-container">
+    <div class="white-pause"></div>
+
+    <div class="vertical-section">
+      <div id="main-container">
+      </div>
     </div>
 
     <script type="text/mustache" id="welcome-template">
       Welcome to feat data browser
     </script>
 
-    <script type="text/mustache" id="graph-template">
-      <div id="link-graph">
+    <script type="text/mustache" id="graph-template" src="templates/graph.html">
+      <div id="link-graph" class="grey-gradient">
       </div>
       <form id="jump-to-graph" method="post" action="#graph">
-        <label for="docID">Jump to document</label>
-        <input type="text" name="docID" value="{{docID}}"/>
-        <input type="submit" value="go" />
+        <label for="docID">Jump to:</label>
+        <input size="60" type="text" name="docID" value="{{docID}}"/>
+        <input class="action-button highlight" type="submit" value="go" />
       </form>
     </script>
 

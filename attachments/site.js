@@ -229,11 +229,14 @@ config.baseURL = "/" + config.db + "/_design/" + config.design + "/_rewrite/";
 
 var browser = {};
 browser.index = function () {
+    browser.selectSection();
     render('welcome', 'main-container');
 };
 
 
 browser.graph = function() {
+    browser.selectSection('graph');
+
     var docID = this.params['docID'];
     render('graph', 'main-container', {docID: docID});
     if (docID) {
@@ -241,6 +244,13 @@ browser.graph = function() {
     }
 };
 
+
+browser.selectSection = function(selected) {
+    $('#top_menu li').removeClass('selected');
+    if (selected) {
+        $('#' + selected + '-link').closest('li').addClass('selected');
+    }
+}
 
 $(function () {
   browser.s = $.sammy(function () {
