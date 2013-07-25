@@ -57,12 +57,21 @@
     <script type="text/mustache" id="graph-template" src="templates/graph.html">
       <div id="link-graph" class="grey-gradient">
       </div>
-      <form id="jump-to-graph" method="post" action="#graph">
+      <form class="float with-margin"
+            id="jump-to-graph" method="post" action="#graph">
         <label for="docID">Jump to:</label>
         <input size="32" type="text" name="docID" value="{{docID}}"/>
         <input class="action-button highlight" type="submit" value="GO" />
       </form>
+      {{#docID}}
+      <a class="float futon-link"
+         href="/_utils/document.html?feat/{{docID}}" target="_blank">
+        View in Futon
+      </a>
+      {{/docID}}
+      <div class="clearfix"></div>
     </script>
+
 
     <script type="text/mustache" id="error-template">
       <div class="error-message">{{text}}</div>

@@ -92,6 +92,10 @@ body {
     margin: 0px;
 }
 
+a {
+    color: #f19700;
+}
+
 .clearfix {
     clear: both;
 }
@@ -102,6 +106,7 @@ body {
     border-bottom: 1px solid #f4f3f1;
     clear: both;
 }
+
 
 .vertical-section > div {
     display: block;
@@ -181,7 +186,7 @@ div.vertical-section > div#sub_menu_section {
     -moz-box-sizing: border-box;    /* Firefox, other Gecko */
 }
 
-.action-button.with-margin {
+.with-margin {
     margin: 0px 30px 0px 0px ;
 }
 
@@ -201,4 +206,8 @@ div.vertical-section > div#sub_menu_section {
     background: #f8a732;
     border: 1px solid #f8a732;
     color: white;
+}
+
+.futon-link {
+    line-height: 38px;
 }
