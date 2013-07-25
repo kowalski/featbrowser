@@ -1,3 +1,202 @@
+(function($) {
+    
+     var defaults = {
+         target: null,
+         docID: null,
+         limit: 2,
+         maxNodes: 50,
+         colorsForLevel: ['black', 'blue', 'green'],
+         forceAtlasTimeout: 1500
+     };
+
+     DocumentNode = function(id, label, level, linkTo) {
+         this.id = id;
+         this.label = label;
+         this.level = level;
+         this.linkTo = [];
+         if (linkTo) this.linkTo.push(linkTo);
+     };
+
+     DocumentNode.prototype.addLink = function(id, label) {
+         if (this.linkTo.indexOf(id) == -1) {
+             this.linkTo.push(id);
+         }
+     };
+
+     window.LinkGraph = function(options) {
+         options = $.extend({}, defaults, options);
+         this.docID = options['docID'];
+         this.target = options['target'];
+         this.options = options;
+         this.sigma = null;
+
+         // id -> DocumentNode;
+         this.nodes = {};
+         this.countPerLevel = {};
+         this.count = 0;
+
+         // list of requests kept to know when we are done loading
+         this.requests = [];
+
+         $.request({uri: config.baseURL + 'api/' + this.docID},
+                   this.handler(this.gotDocument));
+
+     };
+
+     LinkGraph.prototype.addNode = function(id, label, level, linkTo){
+         if (this.nodes.hasOwnProperty(id)) {
+             this.nodes[id].addLink(linkTo, label);
+             return;
+         } else {
+             this.count += 1;
+             if (this.count > this.options.maxNodes) {
+                 return;
+             }
+             var node = new DocumentNode(id, label, level, linkTo);
+             this.nodes[id] = node;
+             if (!this.countPerLevel.hasOwnProperty(level)) {
+                 this.countPerLevel[level] = 0;
+             }
+             this.countPerLevel[level] += 1;
+             return node;
+         }
+     };
+
+     LinkGraph.prototype.handler = function() {
+         var self = this;
+         var callback = arguments[0];
+         var args = arguments;
+
+         function handler(err, resp, body) {
+             callback.apply(self,
+                            Array.concat([err, resp, body],
+                                         Array.slice(args).slice(1)));
+         }
+
+         return handler;
+     };
+
+     LinkGraph.prototype.gotDocument = function(err, resp, body) {
+
+         if (doc == "Object Not Found") {
+             render("error", this.target.attr('id'),
+                    {text: "Document not found"});
+             return;
+         };
+
+         var doc = JSON.parse(body);
+         this.addNode(this.docID, doc['.type'], 0);
+         var r;
+         r = $.request({uri: config.baseURL + 'api/links/' + this.docID},
+                       this.handler(this.gotLevel, 1));
+         this.requests.push(r);
+
+     };
+
+     LinkGraph.prototype.isDone = function() {
+         var done = true;
+
+         $.each(this.requests, function() {
+                    if (this.readyState != 4) {
+                        done = false;
+                    }
+                });
+         if (done){
+             this.requests = [];             
+         }
+         return done;
+     };
+
+     LinkGraph.prototype.draw = function() {
+         if (!this.isDone()) return;
+         if (this.sigma) return;
+         
+         this.sigma = sigma.init(this.target[0]);
+
+         this.sigma.graphProperties({minNodeSize: 1,
+                                     maxNodeSize: 5});
+         this.sigma.drawingProperties({defaultLabelColor: '#ccc',
+                                       font: 'Arial',
+                                       edgeColor: 'source',
+                                       defaultEdgeType: 'line'
+                                      });
+
+         var self = this;
+         var indexPerLevel = {};
+
+         function positionNode(index, node) {
+             if (! indexPerLevel.hasOwnProperty(node.level)) {
+                 indexPerLevel[node.level] = -1;
+             }
+             indexPerLevel[node.level] += 1;
+             var index = indexPerLevel[node.level];
+             var count = self.countPerLevel[node.level];
+             var angle = Math.PI * 2 * index / count;
+             var x = 0.4 * node.level * Math.sin(angle);
+             var y = 0.4 * node.level * Math.cos(angle);
+
+             var opts = {x: x , y: y, label: node.label,
+                         color: self.options.colorsForLevel[node.level],
+                         size: self.options['limit'] - node.level + 1
+                        };
+             self.sigma.addNode(node.id, opts);
+         }
+
+         $.each(this.nodes, positionNode);
+
+         function addEdges(index, node) {
+             $.each(node.linkTo, function() {
+                        var edgeID = node.id + '-' + this;
+                        self.sigma.addEdge(edgeID, node.id, this);
+                    });
+         }
+         
+         $.each(this.nodes, addEdges);
+         this.sigma.draw();
+         this.sigma.startForceAtlas2();
+         setTimeout(function() {self.sigma.stopForceAtlas2()},
+                    self.options.forceAtlasTimeout);
+
+     }
+
+     LinkGraph.prototype.gotLevel = function(err, resp, body, level) {
+         if (err) {
+             console.log('Error getting level', err);
+             return;
+         }
+
+         var self = this;
+         var resp = JSON.parse(body);
+         var added = [];
+         $.each(resp.rows, function() {
+                    var target, linkTo;
+                    if (this.value && this.value['_id']) {
+                        target = this.value['_id'];
+                        linkTo = this.id;
+                    } else {
+                        target = this.id;
+                        linkTo = this.key[0];
+                    }
+                    var isNew = self.addNode(target, this.key[1], level, linkTo);
+                    if (isNew) added.push(isNew);
+                });
+
+         if (level < this.options.limit) {
+             $.each(added, function() {
+                        var r;
+                        r = $.request(
+                            {uri: config.baseURL + 'api/links/' + this.id},
+                            self.handler(self.gotLevel, level + 1));
+                        self.requests.push(r);
+                        });
+             
+         } else {
+             self.draw();
+         }
+     };
+
+})(jQuery);
+    
 
 function render(template, target, data) {
     if ( !data ) var data = {};
@@ -12,86 +211,33 @@ var config = {
 
 config.baseURL = "/" + config.db + "/_design/" + config.design + "/_rewrite/";
 
-function reqOpts(opts) {
-    var defaults = {
-        uri: config.baseURL + "api",
-        method: "GET",
-        headers: {"Content-type": "application/json"},
-        cache: true
-    };
-    return $.extend({}, defaults, opts);
-}
 
-var app = {};
-app.index = function () {
+var browser = {};
+browser.index = function () {
     render('welcome', 'main-container');
 };
 
 
-var COLORS_BY_LEVEL = ['black', 'blue'];
-
-function renderGraph(err, resp, body) {
-    if (doc == "Object Not Found") {
-        render("error", "link-graph", {text: "Document not found"});
-        return;
-    };
-    var doc = JSON.parse(body);
-    var docID = doc["_id"];
-    var sig = sigma.init($('#link-graph')[0]);
-    sig.graphProperties({
-        minNodeSize: 2,
-        maxNodeSize: 10});
-    sig.drawingProperties({
-        defaultLabelColor: '#ccc',
-        font: 'Arial',
-        edgeColor: 'source',
-        defaultEdgeType: 'curve'
-    });
-    sig.addNode(doc['_id'], {x:0 , y: 0, label: doc['.type'],
-                             color: COLORS_BY_LEVEL[0]});
-    sig.draw();
-    window.sig = sig;
-
-    $.request({uri: config.baseURL + 'api/links/' + docID},
-              function(err, resp, body) {
-                  if (!err) {
-                      var resp = JSON.parse(body);
-                      $.each(resp.rows, function(index) {
-                          var x = (0.2 * Math.sin(index / resp.rows.length * 2 * Math.PI));
-                          var y = (0.2 * Math.cos(index / resp.rows.length * 2 * Math.PI));
-                          try {
-                              sig.addNode(this.id, {label: this.key[1],
-                                                    x: x, y: y,
-                                                    color: COLORS_BY_LEVEL[1]});
-                              var edgeID = docID + '-' + this.id;
-                              sig.addEdge(edgeID, docID, this.id);
-                          } catch (e) {};
-                      });
-                      sig.draw();
-                  }
-              });
-}
-
-app.graph = function() {
+browser.graph = function() {
     var docID = this.params['docID'];
     render('graph', 'main-container', {docID: docID});
     if (docID) {
-        $.request({uri: config.baseURL + 'api/' + docID}, renderGraph);
+        new LinkGraph({target: $('#link-graph'), docID: docID});
     }
 };
 
 
 $(function () {
-  app.s = $.sammy(function () {
+  browser.s = $.sammy(function () {
     // Index of all databases
-    this.get('', app.index);
-    this.get("#/", app.index);
-    this.get("#graph", app.graph);
+    this.get('', browser.index);
+    this.get("#/", browser.index);
+    this.get("#graph", browser.graph);
     this.post("#graph", function() {
         // this is used by jump to form
         this.redirect('#graph', this.params['docID']);
     });
-    this.get("#graph/:docID", app.graph);
+    this.get("#graph/:docID", browser.graph);
   })
-  app.s.run();
+  browser.s.run();
 });
