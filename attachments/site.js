@@ -256,6 +256,15 @@ browser.graph = function() {
 };
 
 
+browser.types = function () {
+    browser.selectSection('types');
+    document.title = "Document types browser";
+
+    var type = this.params['type'];
+    render('types', 'main-container', {type: type});
+}
+
+
 browser.selectSection = function(selected) {
     $('#top_menu li').removeClass('selected');
     if (selected) {
@@ -264,16 +273,19 @@ browser.selectSection = function(selected) {
 }
 
 $(function () {
-  browser.s = $.sammy(function () {
-    // Index of all databases
-    this.get('', browser.index);
-    this.get("#/", browser.index);
-    this.get("#graph", browser.graph);
-    this.post("#graph", function() {
-        // this is used by jump to form
-        this.redirect('#graph', this.params['docID']);
-    });
-    this.get("#graph/:docID", browser.graph);
-  })
-  browser.s.run();
+      browser.s = $.sammy(
+          function () {
+              // Index of all databases
+              this.get('', browser.index);
+              this.get("#/", browser.index);
+              this.get("#graph", browser.graph);
+              this.post("#graph", function() {
+                            // this is used by jump to form
+                            this.redirect('#graph', this.params['docID']);
+                        });
+              this.get("#graph/:docID", browser.graph);
+              this.get("#types", browser.types);
+              this.get("#types/:type", browser.types);
+          })
+      browser.s.run();
 });
