@@ -5,7 +5,9 @@
          docID: null,
          limit: 3,
          maxNodes: 150,
-         colorsForLevel: ['#c50b0b', '#ff9a0a', '#82bd07', '#5e5e5e'],
+         availableColors: ['#f9a021', '#cb0000', '#89ca00', '#c9c9c9',
+                           '#0486c3', '#b4b487', '#ebe934', '#04b8b6',
+                           '#93776b', '#bd7da5'],
          forceAtlasTimeout: 1500
      };
 
@@ -129,6 +131,8 @@
 
          var self = this;
          var indexPerLevel = {};
+         var availableColors = Array.slice(this.options.availableColors);
+         var colorsForType = {};
 
          function positionNode(index, node) {
              if (! indexPerLevel.hasOwnProperty(node.level)) {
@@ -141,9 +145,14 @@
              var x = 0.4 * node.level * Math.sin(angle);
              var y = 0.4 * node.level * Math.cos(angle);
 
+             if (!colorsForType.hasOwnProperty(node.label)) {
+                 colorsForType[node.label] = availableColors.shift();
+                 availableColors.push(colorsForType[node.label]);
+                 
+             }
              var opts = {x: x , y: y, label: node.label,
-                         color: self.options.colorsForLevel[node.level],
-                         size: self.options['limit'] - node.level + 1
+                         color: colorsForType[node.label],
+                         size: self.options['limit'] - node.level + 2
                         };
              self.sigma.addNode(node.id, opts);
          }
