@@ -230,12 +230,15 @@ config.baseURL = "/" + config.db + "/_design/" + config.design + "/_rewrite/";
 var browser = {};
 browser.index = function () {
     browser.selectSection();
+    document.title = "FEAT database inspection tool";
+
     render('welcome', 'main-container');
 };
 
 
 browser.graph = function() {
     browser.selectSection('graph');
+    document.title = "Document link browser";
 
     var docID = this.params['docID'];
     render('graph', 'main-container', {docID: docID});
