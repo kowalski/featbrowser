@@ -1,0 +1,19 @@
+This is a couchapp for inspecting the schema of database managed by the
+feat couchdb driver. It uses the common views defined by the framework
+to provide the useful views.
+
+
+== Installing ==
+
+   Run the following command:
+
+       couchapp push app.js http://localhost:5985/feat
+
+   The app is accessible below the following URL:
+
+       http://localhost:5985/feat/_design/browser/_rewrite
+
+
+
+
+
