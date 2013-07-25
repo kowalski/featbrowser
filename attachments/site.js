@@ -4,7 +4,7 @@
          target: null,
          docID: null,
          limit: 2,
-         maxNodes: 50,
+         maxNodes: 150,
          colorsForLevel: ['black', 'blue', 'green'],
          forceAtlasTimeout: 1500
      };
@@ -62,14 +62,20 @@
          }
      };
 
+     /*
+      * Bind the handler, so that its called with this attached to the
+      * LinkGraph object. Call it with the callback as a parameter.
+      * Additionally you may pass extra arguments which will be passed after
+      * the original callback arguments.
+      */
      LinkGraph.prototype.handler = function() {
          var self = this;
          var callback = arguments[0];
          var args = arguments;
 
-         function handler(err, resp, body) {
+         function handler() {
              callback.apply(self,
-                            Array.concat([err, resp, body],
+                            Array.concat(Array.slice(arguments),
                                          Array.slice(args).slice(1)));
          }
 
@@ -154,10 +160,19 @@
          $.each(this.nodes, addEdges);
          this.sigma.draw();
          this.sigma.startForceAtlas2();
+         this.sigma.bind('downnodes', this.handler(this.sigmaDownNodes));
          setTimeout(function() {self.sigma.stopForceAtlas2()},
                     self.options.forceAtlasTimeout);
 
-     }
+     };
+
+     LinkGraph.prototype.sigmaDownNodes = function(event) {
+         var docID = event.content[0];
+         console.log(docID);
+         if (docID != this.docID) {
+             document.location.hash = "#graph/" + docID;
+         }
+     };
 
      LinkGraph.prototype.gotLevel = function(err, resp, body, level) {
          if (err) {
