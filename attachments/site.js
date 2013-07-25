@@ -1,5 +1,5 @@
 (function($) {
-    
+
      var defaults = {
          target: null,
          docID: null,
@@ -77,8 +77,9 @@
 
          function handler() {
              callback.apply(self,
-                            Array.concat(Array.slice(arguments),
-                                         Array.slice(args).slice(1)));
+                            Array.prototype.concat(
+                                Array.prototype.slice.call(arguments),
+                                Array.prototype.slice.call(args, 1)));
          }
 
          return handler;
@@ -110,7 +111,7 @@
                     }
                 });
          if (done){
-             this.requests = [];             
+             this.requests = [];
          }
          return done;
      };
@@ -118,7 +119,7 @@
      LinkGraph.prototype.draw = function() {
          if (!this.isDone()) return;
          if (this.sigma) return;
-         
+
          this.sigma = sigma.init(this.target[0]);
 
          this.sigma.graphProperties({minNodeSize: 1,
@@ -131,7 +132,8 @@
 
          var self = this;
          var indexPerLevel = {};
-         var availableColors = Array.slice(this.options.availableColors);
+         var availableColors = Array.prototype.slice.call(
+             this.options.availableColors);
          var colorsForType = {};
 
          function positionNode(index, node) {
@@ -164,7 +166,7 @@
                         self.sigma.addEdge(edgeID, node.id, this);
                     });
          }
-         
+
          $.each(this.nodes, addEdges);
          this.sigma.draw();
          this.sigma.startForceAtlas2();
@@ -212,14 +214,14 @@
                             self.handler(self.gotLevel, level + 1));
                         self.requests.push(r);
                         });
-             
+
          } else {
              self.draw();
          }
      };
 
 })(jQuery);
-    
+
 
 function render(template, target, data) {
     if ( !data ) var data = {};
