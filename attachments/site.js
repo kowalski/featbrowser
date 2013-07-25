@@ -5,7 +5,7 @@
          docID: null,
          limit: 3,
          maxNodes: 150,
-         colorsForLevel: ['black', 'blue', 'green', 'red'],
+         colorsForLevel: ['#c50b0b', '#ff9a0a', '#82bd07', '#5e5e5e'],
          forceAtlasTimeout: 1500
      };
 
