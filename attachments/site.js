@@ -122,7 +122,7 @@
          this.sigma = sigma.init(this.target[0]);
 
          this.sigma.graphProperties({minNodeSize: 1,
-                                     maxNodeSize: 5});
+                                     maxNodeSize: 10});
          this.sigma.drawingProperties({defaultLabelColor: '#ccc',
                                        font: 'Arial',
                                        edgeColor: 'source',
@@ -151,7 +151,7 @@
              }
              var opts = {x: x , y: y, label: node.label,
                          color: colorsForType[node.label],
-                         size: self.options['limit'] - node.level + 2
+                         size: 3 * (self.options['limit'] - node.level) + 2
                         };
              self.sigma.addNode(node.id, opts);
          }
