@@ -145,10 +145,9 @@
              var x = 0.4 * node.level * Math.sin(angle);
              var y = 0.4 * node.level * Math.cos(angle);
 
-             if (!colorsForType.hasOwnProperty(node.label)) {
+             if (! colorsForType.hasOwnProperty(node.label)) {
                  colorsForType[node.label] = availableColors.shift();
                  availableColors.push(colorsForType[node.label]);
-                 
              }
              var opts = {x: x , y: y, label: node.label,
                          color: colorsForType[node.label],
