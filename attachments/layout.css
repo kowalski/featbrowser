@@ -24,7 +24,7 @@ body {
 
 label {
     color: #faad53;
-    font-size: 12px;
+    font-size: 15px;
     font-family: sofia_pro_lightregular;
     margin-top: 2px;
     margin-bottom: 8px;
@@ -94,6 +94,7 @@ body {
 
 a {
     color: #f19700;
+    font-size: 15px;
 }
 
 .clearfix {
