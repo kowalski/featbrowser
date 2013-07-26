@@ -303,11 +303,17 @@ function handlerFactory() {
              var tr = $('<tr></tr>');
              for (var cindex in this.rows[index]) {
                  var td = $("<td></td>");
+                 // var clearfix = $("<div></div>").addClass('clearfix');
                  td.append(_renderValue(this.rows[index][cindex]));
+                 // clearfix.appendTo(td);
                  td.appendTo(tr);
              }
              tr.appendTo(this.options.target.find('tbody'));
+                          
+                          
          }
+         this.options.target.css('max-height',
+                                 window.innerHeight - this.options.target.offset().top);
      };
 
      TypesTable.prototype.cleanup = function() {
