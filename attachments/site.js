@@ -275,6 +275,7 @@ browser.types = function () {
         $.each(types, function() {options.push({label: this, value: this});});
         render('type-select', 'type-select-container', {'options': options});
         if (type) $('#type-select').val(type);
+        $('#type-select').chosen();
         $('#type-select').bind('change', function(ev) {
                                    $(ev.target).closest('form').submit();});
     }
