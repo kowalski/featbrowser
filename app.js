@@ -9,6 +9,9 @@ ddoc =
     , {from:"/api", to:'../../'}
     , {from:"/api/links/:doc_id", to:'../../_design/featjs/_view/join',
        query: {startkey: [":doc_id"], endkey: [":doc_id", {}]}}
+    , {from:"/api/types/:type/headers",
+       to:"_list/headers/featjs/by_type",
+       query: {key: ":type", include_docs: "true"}}
     , {from:"/api/*", to:'../../*'}
     , {from:"/*", to:'*'}
     ]
@@ -16,6 +19,30 @@ ddoc =
   ;
 
 ddoc.views = {};
+
+ddoc.lists = {
+
+    headers: function(head, req) {
+        var seen = [];
+        var begun = false;
+
+        start({"headers":{"Content-Type": "application/json"}});
+        send("[");
+        while (row = getRow()) {
+            for (var key in row.doc) {
+                if (seen.indexOf(key) == -1) {
+                    seen.push(key);
+                    if (key[0] != '.' && key[0] != '_') {
+                        if (begun) send(", ");
+                        begun = true;
+                        send('"' + key + '"');
+                    }
+                }
+            }
+        }
+        send("]");
+    }
+}
 
 ddoc.validate_doc_update = function (newDoc, oldDoc, userCtx) {
   if (newDoc._deleted === true && userCtx.roles.indexOf('_admin') === -1) {
