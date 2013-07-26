@@ -263,6 +263,7 @@ function handlerFactory() {
          }
          this.headers = JSON.parse(body);
          this.headers.sort();
+         this.headers = Array.prototype.concat.call(['_id'], this.headers);
          this.getRows();
      };
 
@@ -286,11 +287,6 @@ function handlerFactory() {
              for (var header in this.headers){
                  var value = resp.rows[row].doc[this.headers[header]];
                  current.push(value);
-                 
-                 // var html = $.futon.formatJSON(value, {
-                 //         html: true, indent: 0, linesep: "", quoteKeys: false});
-                 // var html = _renderValue(value).html();
-                 // current.push(html)
              }
          }
          this.render();
@@ -301,16 +297,21 @@ function handlerFactory() {
          render('table', targetID, this);
          for (var index in this.rows) {
              var tr = $('<tr></tr>');
+             var td = $('<td></td>');
              for (var cindex in this.rows[index]) {
                  var td = $("<td></td>");
-                 // var clearfix = $("<div></div>").addClass('clearfix');
-                 td.append(_renderValue(this.rows[index][cindex]));
-                 // clearfix.appendTo(td);
-                 td.appendTo(tr);
+                 if (cindex == 0) {
+                     var docID = this.rows[index][cindex];
+                     var value = $('<a></a>'
+                                  ).attr('href', config.futonURL(docID)
+                                  ).attr('target', 'blank'
+                                  ).html(this.rows[index][cindex]);
+                 } else{
+                     var value = _renderValue(this.rows[index][cindex]);
+                 }
+                 td.append(value).appendTo(tr);
              }
              tr.appendTo(this.options.target.find('tbody'));
-                          
-                          
          }
          this.options.target.css('max-height',
                                  window.innerHeight - this.options.target.offset().top);
@@ -404,6 +405,10 @@ var config = {
 };
 
 config.baseURL = "/" + config.db + "/_design/" + config.design + "/_rewrite/";
+
+config.futonURL = function(docID) {
+    return '/_utils/document.html?' + this.db + '/' + docID
+};
 
 
 var browser = {};
