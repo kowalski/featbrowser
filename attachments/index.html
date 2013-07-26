@@ -85,8 +85,22 @@
     </script>
 
     <script type="text/mustache" id="types-template">
-      Browse document types
+      <div id="type-select-container"></div>
     </script>
+
+    <script type="text/mustache" id="type-select-template">
+      <form class="float with-margin" method="post" action="#types">
+        <label for="type-select">Select document type:</label>
+        <select id="type-select" name="type">
+          {{#options}}<option value="{{value}}">{{label}}</option>{{/options}}
+        </select>
+      </form>
+      <div class="clearfix"></div>
+    </script>
+
+    <!-- <script type="text/mustache" id="options-template"> -->
+    <!--   {{#options}}<option value="{{value}}">{{label}}</option>{{/options}} -->
+    <!-- </script> -->
 
 
   </body>

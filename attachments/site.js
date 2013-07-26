@@ -264,6 +264,23 @@ browser.types = function () {
 
     var type = this.params['type'];
     render('types', 'main-container', {type: type});
+
+    function gotTypes(err, resp, body) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        var types = JSON.parse(body);
+        var options = [];
+        $.each(types, function() {options.push({label: this, value: this});});
+        render('type-select', 'type-select-container', {'options': options});
+        if (type) $('#type-select').val(type);
+        $('#type-select').bind('change', function(ev) {
+                                   $(ev.target).closest('form').submit();});
+    }
+
+    $.request({uri: config.baseURL + 'api/types'}, gotTypes);
+    
 }
 
 
@@ -282,11 +299,13 @@ $(function () {
               this.get("#/", browser.index);
               this.get("#graph", browser.graph);
               this.post("#graph", function() {
-                            // this is used by jump to form
                             this.redirect('#graph', this.params['docID']);
                         });
               this.get("#graph/:docID", browser.graph);
               this.get("#types", browser.types);
+              this.post("#types", function() {
+                            this.redirect('#types', this.params['type']);
+                        });
               this.get("#types/:type", browser.types);
           })
       browser.s.run();
