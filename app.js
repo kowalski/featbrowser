@@ -12,6 +12,8 @@ ddoc =
     , {from:"/api/types/:type/headers",
        to:"_list/headers/featjs/by_type",
        query: {key: ":type", include_docs: "true"}}
+    , {from:"/api/types/:type", to:"../../_design/featjs/_view/by_type",
+       query: {key: ":type", include_docs: "true"}}
     , {from:"/api/types", to:"_list/keys/featjs/by_type"}
     , {from:"/api/*", to:'../../*'}
     , {from:"/*", to:'*'}

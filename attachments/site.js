@@ -1,3 +1,25 @@
+/*
+ * Bind the handler, so that its called with this attached to the
+ * owning object. Call it with the callback as a parameter.
+ * Additionally you may pass extra arguments which will be passed after
+ * the original callback arguments.
+ */
+function handlerFactory() {
+    var self = this;
+    var callback = arguments[0];
+    var args = arguments;
+
+    function handler() {
+        callback.apply(self,
+                       Array.prototype.concat(
+                           Array.prototype.slice.call(arguments),
+                           Array.prototype.slice.call(args, 1)));
+    }
+
+    return handler;
+};
+
+
 (function($) {
 
      var defaults = {
@@ -64,26 +86,7 @@
          }
      };
 
-     /*
-      * Bind the handler, so that its called with this attached to the
-      * LinkGraph object. Call it with the callback as a parameter.
-      * Additionally you may pass extra arguments which will be passed after
-      * the original callback arguments.
-      */
-     LinkGraph.prototype.handler = function() {
-         var self = this;
-         var callback = arguments[0];
-         var args = arguments;
-
-         function handler() {
-             callback.apply(self,
-                            Array.prototype.concat(
-                                Array.prototype.slice.call(arguments),
-                                Array.prototype.slice.call(args, 1)));
-         }
-
-         return handler;
-     };
+     LinkGraph.prototype.handler = handlerFactory;
 
      LinkGraph.prototype.gotDocument = function(err, resp, body) {
 
@@ -223,6 +226,166 @@
 })(jQuery);
 
 
+(function($) {
+
+     PaginationControls = function() {
+         this.currentPage = 0;
+         this.totalPages = null;
+         this.totalRecords = null;
+         this.perPage = 10;
+     }
+
+     PaginationControls.prototype.getQuery = function() {
+         return "limit=" + this.perPage + "&skip=" + (this.currentPage * this.perPage);
+     };
+
+     var defaults = {
+         target: null,
+         type: null
+     };
+
+     window.TypesTable = function(opts) {
+         this.options = $.extend({}, defaults, opts);
+         this.headers = null;
+         this.paginator = new PaginationControls();
+         $.request({uri: (config.baseURL + 'api/types/' +
+                          this.options.type + '/headers?' +
+                          this.paginator.getQuery())},
+                   this.handler(this.gotHeaders));
+     };
+
+     TypesTable.prototype.handler = handlerFactory;
+
+     TypesTable.prototype.gotHeaders = function(err, res, body) {
+         if (err) {
+             console.log(err);
+             return;
+         }
+         this.headers = JSON.parse(body);
+         this.headers.sort();
+         this.getRows();
+     };
+
+     TypesTable.prototype.getRows = function() {
+         $.request({uri: (config.baseURL + 'api/types/' +
+                          this.options.type + '?' +
+                          this.paginator.getQuery())},
+                   this.handler(this.gotRows));
+     };
+
+     TypesTable.prototype.gotRows = function(err, res, body) {
+         if (err) {
+             console.log(err);
+             return;
+         }
+         var resp = JSON.parse(body);
+         this.rows = [];
+         for (var row in resp.rows) {
+             var current = []
+             this.rows.push(current);
+             for (var header in this.headers){
+                 var value = resp.rows[row].doc[this.headers[header]];
+                 current.push(value);
+                 
+                 // var html = $.futon.formatJSON(value, {
+                 //         html: true, indent: 0, linesep: "", quoteKeys: false});
+                 // var html = _renderValue(value).html();
+                 // current.push(html)
+             }
+         }
+         this.render();
+     };
+
+     TypesTable.prototype.render = function() {
+         var targetID = this.options.target.attr('id');
+         render('table', targetID, this);
+         for (var index in this.rows) {
+             var tr = $('<tr></tr>');
+             for (var cindex in this.rows[index]) {
+                 var td = $("<td></td>");
+                 td.append(_renderValue(this.rows[index][cindex]));
+                 td.appendTo(tr);
+             }
+             tr.appendTo(this.options.target.find('tbody'));
+         }
+     };
+
+     TypesTable.prototype.cleanup = function() {
+         this.options.target.html('');
+     };
+     
+
+     function _renderValue(value) {
+        function isNullOrEmpty(val) {
+          if (val == null) return true;
+          for (var i in val) return false;
+          return true;
+        }
+        function render(val) {
+          var type = typeof(val);
+          if (type == "object" && !isNullOrEmpty(val)) {
+            var list = $("<dl></dl>");
+            for (var i in val) {
+              $("<dt></dt>").text(i).appendTo(list);
+              $("<dd></dd>").append(render(val[i])).appendTo(list);
+            }
+            return list;
+          } else {
+            var html = $.futon.formatJSON(val, {
+              html: true,
+              escapeStrings: false
+            });
+            var n = $(html);
+            if (n.text().length > 140) {
+              // This code reduces a long string in to a summarized string with a link to expand it.
+              // Someone, somewhere, is doing something nasty with the event after it leaves these handlers.
+              // At this time I can't track down the offender, it might actually be a jQuery propogation issue.
+              var fulltext = n.text();
+              var mintext = n.text().slice(0, 140);
+              var e = $('<a href="#expand">...</a>');
+              var m = $('<a href="#min">X</a>');
+              var expand = function (evt) {
+                n.empty();
+                n.text(fulltext);
+                n.append(m);
+                evt.stopPropagation();
+                evt.stopImmediatePropagation();
+                evt.preventDefault();
+              }
+              var minimize = function (evt) {
+                n.empty();
+                n.text(mintext);
+                // For some reason the old element's handler won't fire after removed and added again.
+                e = $('<a href="#expand">...</a>');
+                e.click(expand);
+                n.append(e);
+                evt.stopPropagation();
+                evt.stopImmediatePropagation();
+                evt.preventDefault();
+              }
+              e.click(expand);
+              n.click(minimize);
+              n.text(mintext);
+              n.append(e)
+            }
+            return n;
+          }
+        }
+        var elem = render(value);
+
+        elem.find("dd:has(dl)").hide().prev("dt").addClass("collapsed");
+        elem.find("dd:not(:has(dl))").addClass("inline").prev().addClass("inline");
+        elem.find("dt.collapsed").click(function() {
+          $(this).toggleClass("collapsed").next().toggle();
+        });
+
+        return elem;
+      }
+
+     
+})(jQuery);
+
+
 function render(template, target, data) {
     if ( !data ) var data = {};
     var html = $.mustache($("#" + template + "-template").text(), data);
@@ -281,7 +444,13 @@ browser.types = function () {
     }
 
     $.request({uri: config.baseURL + 'api/types'}, gotTypes);
-    
+
+    if (type) {
+        if (! browser.types.table) {
+            browser.types.table = new TypesTable(
+                {type: type, target: $("#table-container")});
+        }
+    }
 }
 
 
@@ -305,6 +474,10 @@ $(function () {
               this.get("#graph/:docID", browser.graph);
               this.get("#types", browser.types);
               this.post("#types", function() {
+                            if (browser.types.table) {
+                                browser.types.table.cleanup();
+                                delete browser.types.table;
+                            }
                             this.redirect('#types', this.params['type']);
                         });
               this.get("#types/:type", browser.types);

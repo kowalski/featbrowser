@@ -15,6 +15,8 @@
           rel="stylesheet" type="text/css" />
     <link href="chosen/chosen.css"
           rel="stylesheet" type="text/css" media="screen" />
+    <link href="/_utils/style/layout.css"
+          rel="stylesheet" type="text/css" media="screen" />
 
     <script language="javascript" type="text/javascript"
             src="script/jquery-1.6.1.min.js"></script>
@@ -32,6 +34,8 @@
             src="site.js"></script>
     <script language="javascript" type="text/javascript"
             src="chosen/chosen.jquery.js"></script>
+    <script language="javascript" type="text/javascript"
+            src="/_utils/script/futon.format.js"></script>
 
   </head>
 
@@ -91,6 +95,7 @@
 
     <script type="text/mustache" id="types-template">
       <div id="type-select-container"></div>
+      <div id="table-container"></div>
     </script>
 
     <script type="text/mustache" id="type-select-template">
@@ -101,6 +106,22 @@
         </select>
       </form>
       <div class="clearfix"></div>
+    </script>
+
+
+    <script type="text/mustache" id="table-template">
+      <table id="fields" class="orange">
+        <thead>
+          <tr>
+            {{#headers}}
+            <th>{{.}}</th>
+            {{/headers}}
+          </tr>
+        </thead>
+      <tbody class="content">
+      </tbody>
+
+      </table>
     </script>
 
     <!-- <script type="text/mustache" id="options-template"> -->

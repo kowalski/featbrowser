@@ -10,6 +10,7 @@
 body {
     font-family: Tahoma, sofia_pro_lightregular;
     color: #9a8e79;
+    overflow: auto !important;
 }
 
 ::selection {
@@ -212,3 +213,25 @@ div.vertical-section > div#sub_menu_section {
 .futon-link {
     line-height: 38px;
 }
+
+code.key { color: #333; font-weight: bold; }
+code.string { color: #393; }
+code.number, code.boolean { color: #339; }
+code.null { color: #666; }
+
+code.string { white-space: pre-wrap; }
+code.string:before { color: #ccc; content: "“";
+  position: absolute; left: -4px;
+}
+code.string:after { color: #ccc; content: "”"; }
+
+
+#table-container {
+    max-width: 1000px;
+    overflow-x: auto;
+}
+
+table#fields {
+
+}
+
