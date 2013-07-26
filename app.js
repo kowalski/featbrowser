@@ -12,6 +12,7 @@ ddoc =
     , {from:"/api/types/:type/headers",
        to:"_list/headers/featjs/by_type",
        query: {key: ":type", include_docs: "true"}}
+    , {from:"/api/types", to:"_list/keys/featjs/by_type"}
     , {from:"/api/*", to:'../../*'}
     , {from:"/*", to:'*'}
     ]
@@ -41,7 +42,25 @@ ddoc.lists = {
             }
         }
         send("]");
+    },
+
+    keys: function(head, req) {
+        var seen = [];
+        var begun = false;
+
+        start({"headers":{"Content-Type": "application/json"}});
+        send("[");
+        while (row = getRow()) {
+            if (seen.indexOf(row.key) == -1) {
+                seen.push(row.key);
+                if (begun) send(", ");
+                begun = true;
+                send('"' + row.key + '"');
+            }
+        }
+        send("]");
     }
+
 }
 
 ddoc.validate_doc_update = function (newDoc, oldDoc, userCtx) {
