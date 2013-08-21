@@ -4,6 +4,7 @@
     height: 630px;
     border: 1px solid #dddddd;
     margin-bottom: 15px;
+    position: relative;
 }
 
 .ui-widget,
