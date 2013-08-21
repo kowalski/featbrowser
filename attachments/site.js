@@ -70,11 +70,11 @@ function handlerFactory() {
      LinkGraph.prototype.addNode = function(id, label, level, linkTo){
          if (this.nodes.hasOwnProperty(id)) {
              this.nodes[id].addLink(linkTo, label);
-             return;
+             return null;
          } else {
              this.count += 1;
              if (this.count > this.options.maxNodes) {
-                 return;
+                 return null;
              }
              var node = new DocumentNode(id, label, level, linkTo);
              this.nodes[id] = node;
@@ -174,7 +174,7 @@ function handlerFactory() {
          this.sigma.draw();
          this.sigma.startForceAtlas2();
          this.sigma.bind('downnodes', this.handler(this.sigmaDownNodes));
-         setTimeout(function() {self.sigma.stopForceAtlas2()},
+         setTimeout(function() {self.sigma.stopForceAtlas2();},
                     self.options.forceAtlasTimeout);
 
      };
@@ -233,7 +233,7 @@ function handlerFactory() {
          this.totalPages = null;
          this.totalRecords = null;
          this.perPage = 10;
-     }
+     };
 
      PaginationControls.prototype.getQuery = function() {
          return "limit=" + this.perPage + "&skip=" + (this.currentPage * this.perPage);
@@ -358,7 +358,7 @@ function handlerFactory() {
                 evt.stopPropagation();
                 evt.stopImmediatePropagation();
                 evt.preventDefault();
-              }
+              };
               var minimize = function (evt) {
                 n.empty();
                 n.text(mintext);
@@ -369,11 +369,11 @@ function handlerFactory() {
                 evt.stopPropagation();
                 evt.stopImmediatePropagation();
                 evt.preventDefault();
-              }
+              };
               e.click(expand);
               n.click(minimize);
               n.text(mintext);
-              n.append(e)
+              n.append(e);
             }
             return n;
           }
@@ -401,13 +401,13 @@ function render(template, target, data) {
 
 var config = {
     db: document.location.href.split( '/' )[ 3 ],
-    design: 'browser',
+    design: 'browser'
 };
 
 config.baseURL = "/" + config.db + "/_design/" + config.design + "/_rewrite/";
 
 config.futonURL = function(docID) {
-    return '/_utils/document.html?' + this.db + '/' + docID
+    return '/_utils/document.html?' + this.db + '/' + docID;
 };
 
 
@@ -492,6 +492,6 @@ $(function () {
                             this.redirect('#types', this.params['type']);
                         });
               this.get("#types/:type", browser.types);
-          })
+          });
       browser.s.run();
 });
