@@ -218,9 +218,8 @@ function handlerFactory() {
                         self.requests.push(r);
                         });
 
-         } else {
-             self.draw();
          }
+         self.draw();
      };
 
 })(jQuery);
