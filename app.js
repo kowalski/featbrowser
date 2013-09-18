@@ -11,10 +11,13 @@ ddoc =
        query: {startkey: [":doc_id"], endkey: [":doc_id", {}]}}
     , {from:"/api/types/:type/headers",
        to:"_list/headers/featjs/by_type",
-       query: {key: ":type", include_docs: "true"}}
+       query: {startkey: [":type"], endkey: [":type", {}],
+               include_docs: "true", reduce: "false"}}
     , {from:"/api/types/:type", to:"../../_design/featjs/_view/by_type",
-       query: {key: ":type", include_docs: "true"}}
-    , {from:"/api/types", to:"_list/keys/featjs/by_type"}
+       query: {startkey: [":type"], endkey: [":type", {}],
+               include_docs: "true", reduce: "false"}}
+    , {from:"/api/types", to:"_list/keys/featjs/by_type",
+       query: {group_level: "1"}}
     , {from:"/api/*", to:'../../*'}
     , {from:"/*", to:'*'}
     ]
@@ -49,15 +52,17 @@ ddoc.lists = {
     keys: function(head, req) {
         var seen = [];
         var begun = false;
+        var typeName;
 
         start({"headers":{"Content-Type": "application/json"}});
         send("[");
         while (row = getRow()) {
-            if (seen.indexOf(row.key) == -1) {
-                seen.push(row.key);
+            typeName = row.key[0];
+            if (seen.indexOf(typeName) == -1) {
+                seen.push(typeName);
                 if (begun) send(", ");
                 begun = true;
-                send('"' + row.key + '"');
+                send('"' + typeName + '"');
             }
         }
         send("]");
