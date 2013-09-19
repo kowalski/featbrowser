@@ -227,30 +227,70 @@ function handlerFactory() {
 
 (function($) {
 
-     PaginationControls = function() {
-         this.currentPage = 0;
-         this.totalPages = null;
-         this.totalRecords = null;
-         this.perPage = 10;
+     PaginationControls = function(opts) {
+         var defaults = {
+               currentPage: 1
+             , count: null
+             , perPage: 10
+             , target: null
+             , update: null
+         };
+
+         this.options = $.extend({}, defaults, opts);
      };
 
      PaginationControls.prototype.getQuery = function() {
-         return "limit=" + this.perPage + "&skip=" + (this.currentPage * this.perPage);
+         var skip = ((this.options.currentPage - 1) * this.options.perPage);
+         return ("limit=" + this.options.perPage +
+                 "&skip=" + skip);
+     };
+
+     PaginationControls.prototype.handler = handlerFactory;
+
+     PaginationControls.prototype.setTotalCount = function(count) {
+         this.options.count = count;
+         if (this.options.target) {
+             this.options.target.empty();
+
+             this.options.target.smartpaginator(
+                 {  totalrecords: this.options.count
+                    , recordsperpage: this.options.perPage
+                    , next: 'Next'
+                    , prev: 'Prev'
+                    , first: 'First'
+                    , last: 'Last'
+                    , controlsalways: true
+                    , onchange: this.handler(this.onChange)
+                 });
+         }
+     };
+
+     PaginationControls.prototype.onChange = function(page) {
+         this.options.currentPage = page;
+         if (typeof this.options.update == 'function') {
+             this.options.update();
+         }
      };
 
      var defaults = {
          target: null,
+         paginatorTarget: null,
          type: null
      };
 
      window.TypesTable = function(opts) {
          this.options = $.extend({}, defaults, opts);
          this.headers = null;
-         this.paginator = new PaginationControls();
+         this.paginator = new PaginationControls(
+             {target: this.options.paginatorTarget,
+              update: this.handler(this.getRows)});
          $.request({uri: (config.baseURL + 'api/types/' +
                           this.options.type + '/headers?' +
                           this.paginator.getQuery())},
                    this.handler(this.gotHeaders));
+         $.request({uri: (config.baseURL + 'api/types/' +
+                          this.options.type + '/count')},
+                  this.handler(this.gotCount));
      };
 
      TypesTable.prototype.handler = handlerFactory;
@@ -265,6 +305,20 @@ function handlerFactory() {
          this.headers = Array.prototype.concat.call(['_id'], this.headers);
          this.getRows();
      };
+
+     TypesTable.prototype.gotCount = function(err, res, body) {
+         if (err) {
+             console.log(err);
+             return;
+         }
+
+         var resp = JSON.parse(body);
+         if (resp.rows.length) {
+             this.paginator.setTotalCount(resp.rows[0].value);
+         } else {
+             this.paginator.setTotalCount(0);
+         }
+     };         
 
      TypesTable.prototype.getRows = function() {
          $.request({uri: (config.baseURL + 'api/types/' +
@@ -281,7 +335,7 @@ function handlerFactory() {
          var resp = JSON.parse(body);
          this.rows = [];
          for (var row in resp.rows) {
-             var current = []
+             var current = [];
              this.rows.push(current);
              for (var header in this.headers){
                  var value = resp.rows[row].doc[this.headers[header]];
@@ -312,8 +366,8 @@ function handlerFactory() {
              }
              tr.appendTo(this.options.target.find('tbody'));
          }
-         this.options.target.css('max-height',
-                                 window.innerHeight - this.options.target.offset().top);
+         var maxHeight = window.innerHeight - this.options.target.offset().top;
+         this.options.target.css('max-height', maxHeight);
      };
 
      TypesTable.prototype.cleanup = function() {
@@ -458,7 +512,9 @@ browser.types = function () {
     if (type) {
         if (! browser.types.table) {
             browser.types.table = new TypesTable(
-                {type: type, target: $("#table-container")});
+                {type: type,
+                 target: $("#table-container"),
+                 paginatorTarget: $('.table-paginator')});
         }
     }
 }

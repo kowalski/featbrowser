@@ -13,6 +13,10 @@ ddoc =
        to:"_list/headers/featjs/by_type",
        query: {startkey: [":type"], endkey: [":type", {}],
                include_docs: "true", reduce: "false"}}
+    , {from:"/api/types/:type/count",
+       to:"../../_design/featjs/_view/by_type",
+       query: {startkey: [":type"], endkey: [":type", {}],
+               group_level: "1"}}
     , {from:"/api/types/:type", to:"../../_design/featjs/_view/by_type",
        query: {startkey: [":type"], endkey: [":type", {}],
                include_docs: "true", reduce: "false"}}
