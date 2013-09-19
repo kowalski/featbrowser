@@ -294,6 +294,7 @@ function handlerFactory() {
          $.request({uri: (config.baseURL + 'api/types/' +
                           this.options.type + '/count')},
                   this.handler(this.gotCount));
+         $(window).bind('resize', this.handler(this.fixHeight));
      };
 
      TypesTable.prototype.handler = handlerFactory;
@@ -369,12 +370,17 @@ function handlerFactory() {
              }
              tr.appendTo(this.options.target.find('tbody'));
          }
+         this.fixHeight();
+     };
+
+     TypesTable.prototype.fixHeight = function() {
          var maxHeight = window.innerHeight - this.options.target.offset().top;
          this.options.target.css('max-height', maxHeight);
      };
 
      TypesTable.prototype.cleanup = function() {
          this.options.target.html('');
+         $(window).unbind('resize', this.handler(this.fixHeight));
      };
      
 
