@@ -35,10 +35,10 @@
                     dataElements = $('' + settings.dataelement + '', dataContainer);
                 }
                 var list = $('<ul/>');
-                var btnPrev = $('<div/>').text(settings.prev).click(function () { if ($(this).hasClass('disabled')) return false; currentPage = parseInt(list.find('li a.active').text()) - 1; navigate(--currentPage); }).addClass('btn');
-                var btnNext = $('<div/>').text(settings.next).click(function () { if ($(this).hasClass('disabled')) return false; currentPage = parseInt(list.find('li a.active').text()); navigate(currentPage); }).addClass('btn');
-                var btnFirst = $('<div/>').text(settings.first).click(function () { if ($(this).hasClass('disabled')) return false; currentPage = 0; navigate(0); }).addClass('btn');
-                var btnLast = $('<div/>').text(settings.last).click(function () { if ($(this).hasClass('disabled')) return false; currentPage = totalpages - 1; navigate(currentPage); }).addClass('btn');
+                var btnPrev = $('<div/>').addClass('previous').text(settings.prev).click(function () { if ($(this).hasClass('disabled')) return false; currentPage = parseInt(list.find('li a.active').text()) - 1; navigate(--currentPage); }).addClass('btn');
+                var btnNext = $('<div/>').addClass('next').text(settings.next).click(function () { if ($(this).hasClass('disabled')) return false; currentPage = parseInt(list.find('li a.active').text()); navigate(currentPage); }).addClass('btn');
+                var btnFirst = $('<div/>').addClass('first').text(settings.first).click(function () { if ($(this).hasClass('disabled')) return false; currentPage = 0; navigate(0); }).addClass('btn');
+                var btnLast = $('<div/>').addClass('last').text(settings.last).click(function () { if ($(this).hasClass('disabled')) return false; currentPage = totalpages - 1; navigate(currentPage); }).addClass('btn');
                 var inputPage = $('<input/>').attr('type', 'text').keydown(function (e) {
                     if (isTextSelected(inputPage)) inputPage.val('');
                     if (e.which >= 48 && e.which < 58) {
@@ -47,7 +47,8 @@
                     } else if (!(e.which == 8 || e.which == 46)) e.preventDefault();
                 });
                 var btnGo = $('<input/>').attr('type', 'button').attr('value', settings.go).addClass('btn').click(function () { if (inputPage.val() == '') return false; else { currentPage = parseInt(inputPage.val()) - 1; navigate(currentPage); } });
-                container.append(btnFirst).append(btnPrev).append(list).append(btnNext).append(btnLast).append($('<div/>').addClass('short').append(inputPage).append(btnGo));
+                var labels = $('<div/>').addClass('middle');
+                container.append($('<div/>').addClass('left').append(btnFirst).append(btnPrev)).append(list).append($('<div/>').addClass('right').append(btnNext).append(btnLast)).append(labels).append($('<div/>').addClass('short').append(inputPage).append(btnGo)).append($('<div/>').addClass('clearfix'));
                 if (settings.display == 'single') {
                     btnGo.css('display', 'none');
                     inputPage.css('display', 'none');
@@ -58,14 +59,24 @@
                 navigate(currentPage);
                 initialized = true;
                 function showLabels(pageIndex) {
+                    var container = labels;
                     container.find('span').remove();
                     var upper = (pageIndex + 1) * settings.recordsperpage;
                     if (upper > settings.totalrecords) upper = settings.totalrecords;
-                    container.append($('<span/>').append($('<b/>').text(pageIndex * settings.recordsperpage + 1)))
-                                             .append($('<span/>').text('-'))
-                                             .append($('<span/>').append($('<b/>').text(upper)))
-                                             .append($('<span/>').text('of'))
-                                             .append($('<span/>').append($('<b/>').text(settings.totalrecords)));
+                    container.append(
+                        $('<span/>').text('Page')
+                        .append($('<span/>').text(currentPage + 1))
+                        .append($('<span/>').text('of'))
+                        .append($('<span/>').text(totalpages))
+                        .append($('<span/>').text('('))
+                        .append($('<span/>').text(pageIndex *
+                                                  settings.recordsperpage + 1))
+                        .append($('<span/>').text('-'))
+                        .append($('<span/>').text(upper))
+                        .append($('<span/>').text('records of'))
+                        .append($('<span/>').text(settings.totalrecords))
+                        .append($('<span/>').text(')')))
+
                 }
                 function buildNavigation(startPage) {
                     list.find('li').remove();

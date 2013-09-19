@@ -339,3 +339,94 @@ table.orange tbody tr.even {
 #fields tbody.content td dt {
     margin-left: 0px !important;
 }
+
+
+/* Paginatation widget */
+
+.pager.pagination {
+    margin-top: 10px;
+    height: auto;
+    width: auto;
+    padding: 0px;
+}
+
+.pager.pagination .middle {
+    color: #c2c1bc;
+    font-size: 13px;
+    vertical-align: bottom;
+    line-height: 40px;
+    maring: 0 auto;
+    text-align: center;
+}
+
+.pager.pagination .middle span {
+    color: #c2c1bc;
+    float: none;
+}
+
+.pager.pagination .left {
+    float: left;
+}
+
+.pager.pagination .right {
+    float: right;
+}
+
+.pager.pagination > ul {
+    display: none;
+}
+
+.pager.pagination .left .btn {
+    margin-left: 0px;
+    margin-right: 4px;
+}
+.pager.pagination .right .btn {
+    margin-left: 4px;
+    margin-right: 0px;
+}
+
+.pager.pagination .btn {
+    border: 1px solid #ddddd3;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    display: block;
+    border-radius: 4px;
+    box-sizing: border-box;         /* Opera/IE 8+ */
+    color: #9c8d78;
+    font-family: sofia_pro_lightregular;
+    -moz-border-radius: 4px;
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    padding: 0px 14px;
+    line-height: 35px;
+    background-image: url('images/pagination_controls.png');
+    background-repeat: no-repeat;
+    float: left;
+    width: auto;
+    height: 37px;
+}
+
+.pager.pagination .btn.disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+
+.pager.pagination .first {
+    background-position: 50% -29px;
+}
+
+.pager.pagination .previous {
+    background-position: 4px 3px;
+    padding-left: 22px;
+}
+
+.pager.pagination .next {
+    background-position: 47px -61px;
+    padding-right: 22px;
+}
+
+.pager.pagination .last {
+    background-position: 9px -93px;
+}
+

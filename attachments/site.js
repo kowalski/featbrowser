@@ -257,8 +257,11 @@ function handlerFactory() {
                     , recordsperpage: this.options.perPage
                     , next: 'Next'
                     , prev: 'Prev'
-                    , first: 'First'
-                    , last: 'Last'
+                    , length: 1
+                    , first: ' '
+                    , last: ' '
+                    , display: "single"
+                    , theme: 'pagination'
                     , controlsalways: true
                     , onchange: this.handler(this.onChange)
                  });
