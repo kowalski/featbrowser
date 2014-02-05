@@ -40,6 +40,8 @@
             src="/_utils/script/futon.format.js"></script>
     <script language="javascript" type="text/javascript"
             src="smartpaginator/smartpaginator.js"></script>
+    <script language="javascript" type="text/javascript"
+            src="humanize-plus/humanize.js"></script>
   </head>
 
   <body>
@@ -55,6 +57,11 @@
           <li>
             <a id="types-link" href="#types" class="section-link">
               Document types
+            </a>
+          </li>
+          <li>
+            <a id="stats-link" href="#stats" class="section-link">
+              Document stats
             </a>
           </li>
         </ul>
@@ -96,7 +103,7 @@
       <div class="error-message">{{text}}</div>
     </script>
 
-    <script type="text/mustache" id="types-template">
+    <script type="text/mustache" id="table-page-template">
       <div id="type-select-container"></div>
       <div class="table-paginator"></div>
       <div id="table-container"></div>
@@ -127,11 +134,6 @@
 
       </table>
     </script>
-
-    <!-- <script type="text/mustache" id="options-template"> -->
-    <!--   {{#options}}<option value="{{value}}">{{label}}</option>{{/options}} -->
-    <!-- </script> -->
-
 
   </body>
 </html>

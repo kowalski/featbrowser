@@ -22,6 +22,8 @@ ddoc =
                include_docs: "true", reduce: "false"}}
     , {from:"/api/types", to:"_list/keys/featjs/by_type",
        query: {group_level: "1"}}
+    , {from:"api/stats", to:"_view/documentStats",
+       query: {group_level: "1"}}
     , {from:"/api/*", to:'../../*'}
     , {from:"/*", to:'*'}
     ]

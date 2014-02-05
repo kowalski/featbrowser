@@ -322,7 +322,7 @@ function handlerFactory() {
          } else {
              this.paginator.setTotalCount(0);
          }
-     };         
+     };
 
      TypesTable.prototype.getRows = function() {
          $.request({uri: (config.baseURL + 'api/types/' +
@@ -382,7 +382,7 @@ function handlerFactory() {
          this.options.target.html('');
          $(window).unbind('resize', this.handler(this.fixHeight));
      };
-     
+
 
      function _renderValue(value) {
         function isNullOrEmpty(val) {
@@ -451,8 +451,38 @@ function handlerFactory() {
         return elem;
       }
 
-     
+
 })(jQuery);
+
+
+window.Table = function(opts) {
+    var defaults = {
+        target: null,
+        headers: [],
+        rows: []
+    };
+    this.options = $.extend(new Object(), defaults, opts);
+    this.render();
+};
+
+
+Table.prototype.handler = handlerFactory;
+
+
+Table.prototype.render = function() {
+    var targetID = this.options.target.attr('id');
+    render('table', targetID, {headers: this.options.headers});
+    for (var index in this.options.rows) {
+        var tr = $('<tr></tr>');
+        var td = $('<td></td>');
+        for (var cindex in this.options.rows[index]) {
+            var td = $("<td></td>");
+            var value = this.options.rows[index][cindex];
+            td.append(value).appendTo(tr);
+        }
+        tr.appendTo(this.options.target.find('tbody'));
+    }
+};
 
 
 function render(template, target, data) {
@@ -499,7 +529,7 @@ browser.types = function () {
     document.title = "Document types browser";
 
     var type = this.params['type'];
-    render('types', 'main-container', {type: type});
+    render('table-page', 'main-container', {type: type});
 
     function gotTypes(err, resp, body) {
         if (err) {
@@ -529,6 +559,45 @@ browser.types = function () {
 }
 
 
+browser.stats = function () {
+    browser.selectSection('stats');
+    document.title = "Document stats";
+    render('table-page', 'main-container');
+
+    var target = $("#table-container");
+    target.html('<span>Fetching stats.... please wait.</span>');
+
+    function renderTable(err, resp, body) {
+        if (err) {
+            target.html(err);
+            return;
+        }
+        var stats = JSON.parse(body);
+        var rows = [];
+        stats.rows.sort(function(a, b) {
+            return b.value.totalSize - a.value.totalSize });
+
+        for (var index in stats.rows) {
+            rows.push([
+                stats.rows[index].key,
+                stats.rows[index].value.count,
+                stats.rows[index].value.attachmentsCount,
+                Humanize.fileSize(stats.rows[index].value.documentSize),
+                Humanize.fileSize(stats.rows[index].value.attachmentsSize),
+                Humanize.fileSize(stats.rows[index].value.totalSize)]);
+        }
+        browser.stats.table = new Table(
+            {rows: rows,
+             headers: ['Type', 'Document Count', 'Attachments Count',
+                       'Document Size', 'Attachment Size', 'Total Size'],
+             target: target});
+    }
+
+    $.request({uri: config.baseURL + 'api/stats'}, renderTable);
+
+};
+
+
 browser.selectSection = function(selected) {
     $('#top_menu li').removeClass('selected');
     if (selected) {
@@ -556,6 +625,7 @@ $(function () {
                             this.redirect('#types', this.params['type']);
                         });
               this.get("#types/:type", browser.types);
+              this.get("#stats", browser.stats);
           });
       browser.s.run();
 });
