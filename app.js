@@ -28,7 +28,39 @@ ddoc =
   }
   ;
 
-ddoc.views = {};
+ddoc.views = {
+    'documentStats': {
+        'map': function(doc) {
+            var value = {};
+            value.documentSize = JSON.stringify(doc).length;
+            value.count = 1;
+            value.attachmentsSize = 0;
+            value.attachmentsCount = 0;
+            if (doc._attachments) {
+                for (var name in doc._attachments) {
+                    value.attachmentsCount += 1;
+                    value.attachmentsSize += doc._attachments[name].length;
+                }
+            }
+            value.totalSize = value.documentSize + value.attachmentsSize;
+            emit(doc['.type'], value);
+        },
+        'reduce': function(keys, values, rereduce) {
+            var result = {};
+            var names = ['documentSize', 'count', 'attachmentsSize',
+                         'attachmentsCount', 'totalSize'];
+            for (var index = 0; index < values.length; index++) {
+                var value = values[index];
+                for (var index2 = 0; index2 < names.length; index2++) {
+                    var name = names[index2];
+                    if (!result[name]) result[name] = 0;
+                    result[name] += value[name];
+                }
+            }
+            return result;
+        }
+    }
+};
 
 ddoc.lists = {
 
