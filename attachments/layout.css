@@ -277,7 +277,7 @@ table.orange th {
     border-right: 1px solid #e68a0b;
     color: white;
     background-color: #f9a022;
-    padding: 0px;
+    padding: 0px 4px;
     font-weight: normal;
     height: 40px;
 }
